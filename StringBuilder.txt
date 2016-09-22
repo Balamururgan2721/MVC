@@ -1,0 +1,13 @@
+ catch (Exception msg)
+                {
+
+                    string mypath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\test.txt";
+                    StringBuilder objSB = new StringBuilder();
+                    //objSB.Append("Skill Set:" + JobPostObj.SkillSet + ",JobTitile:" + JobPostObj.JobTitle);
+                    using (StreamWriter outfile = new StreamWriter(mypath))
+                    {
+                        outfile.Write(objSB.ToString() + "   Exception" + msg.Message);
+                    }
+                    throw new Exception(msg.Message);
+
+                }
