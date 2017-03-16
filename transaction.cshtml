@@ -1,0 +1,192 @@
+﻿@{
+    ViewBag.Title = "transaction";
+}
+<link href="../../Content/css/jquery-ui.css" rel="stylesheet" type="text/css" />
+<script src="../../Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
+<script src="../../Scripts/jquery-ui-1.8.11.min.js" type="text/javascript"></script>
+UserName &nbsp; &nbsp;:
+<input type="text" id="admintext" value="@Session["username"]" />
+<br />
+<br />
+<br />
+Amount &nbsp; &nbsp;&nbsp; &nbsp; :<input type="text" id="amount1" />
+<br />
+<br />
+<br />
+Transaction Amount &nbsp;<input type="text" id="transcation" />
+<br />
+<br />
+<br />
+Balance amount &nbsp; &nbsp;<input type="text" id="bamount" />
+<br />
+<br />
+<br />
+Name &nbsp; &nbsp;&nbsp;<input type="text" id="trname" class="autocomplete" />
+<br />
+<br />
+<input type="button" id="ok" value="ok" />
+<input type="button" id="Print" value="Print" onclick="window.print()" />
+<input type="button" id="cancel3" value="Cancel" />
+<script type="text/javascript">
+var s="@Session["username"]";
+    $.ajax({
+        url: '../Home/binds',
+        type: 'POST',
+        data: { Name: s },
+        success: function (data) {
+            //alert(JSON.stringify(data));
+            $.each(data, function (i, item) {
+
+                $("#admintext").val(item.username);
+                $("#amount1").val(item.amount);
+
+               })
+               }
+               });
+
+    $("#ok").click(function () {
+
+        var uname = $("#admintext").val();
+        var amount = $("#amount1").val();
+        var tran = $("#transcation").val();
+        var bamount = $("#bamount").val();
+        var trname = $("#trname").val();
+
+            
+        $.ajax({
+            url: "../Home/save2",
+            data: { username: uname, uamount: amount, utransactionamount: tran, ubalanceamount: bamount, uname: trname },
+            type: "POST",
+
+            success: function (data) {
+              
+                alert("succesfully saved");
+                 cleartext();
+                  window.location.href = "../Home/Index";
+            }
+
+        });
+
+   
+   function cleartext() {
+
+        $("#admintext").val('');
+        $("#amount1").val('');
+        $("#transcation").val('');
+        $("#bamount").val('');
+        $("#trname").val('');
+    }
+});
+
+
+    $("#cancel3").click(function () {
+        window.location.href = "../Home/Index";
+    });
+    
+    
+    $("#transcation").focusout(function () {
+
+        var grosspay = $("#amount1").val();
+        var payamount = $("#transcation").val();
+        var dueamount = grosspay - payamount;        
+        $("#bamount").val(dueamount);
+    });
+
+     $("#trname").autocomplete({
+        source: function (request, response) {
+            $.ajax({
+                url: "../Home/autocomp",
+                dataType: "json",
+                data: {
+                    SearchText: $("#trname").val(),
+                    maxResults: 10
+
+                },
+                contentType: "application/json; charset=utf-8",
+
+                success: function (data) {
+
+                    if (data.length == 0) {
+                        alert(" Name is invalid");
+                        $("#trname").val('');
+                    }
+                    else {
+                        response(data.slice(0, 10));
+                    }
+
+                }
+            });
+        },
+        minLength: 1,
+        select: hai1
+    });
+
+    function hai1(event, ui) {
+
+        $("#trname").val(ui.item.Name);
+
+    }
+</script>
+<script type="text/javascript">
+
+    $("#admin").click(function () {
+
+        var user = $("#Text1").val();
+        var pass = $("#Password1").val();
+
+
+        $.ajax({
+            url: "../Home/lg",
+            type: "POST",
+            data: { username: user, password: pass },
+            success: function (data) {
+                if (data.success == 1) {
+
+                    window.location.href = "../Home/admin";
+
+                }
+
+                else {
+                    alert("Invalid Username and Password");
+                }
+            }
+
+
+
+        });
+    });
+
+    $("#logn").click(function () {
+
+        var user = $("#Text1").val();
+        var pass = $("#Password1").val();
+
+        $.ajax({
+            url: "../Home/login",
+            type: "POST",
+            data: { username: user, password: pass },
+            success: function (data) {
+
+
+
+                if (data.success == 1) {
+
+                    window.location.href = "../Home/admin";
+
+                }
+                else if (data.success == 2) {
+
+                    alert("Login is succesful");
+
+                    window.location.href = "../Home/login";
+                }
+                else {
+                    alert("Invalid Username and Password");
+                }
+            }
+
+
+
+        });
+    });
+</script>
