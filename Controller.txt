@@ -1,0 +1,181 @@
+using Sample.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace Sample.Controllers
+{
+    public class HomeController : Controller
+    {
+        string Connection = "Data source=Web-Server\\SQLEXPRESS;initial catalog=Freshers; uid=fresher;pwd=fresher;";
+        SqlConnection con = null;
+        SqlDataReader dr = null;
+        SqlCommand cmd = null;
+
+
+        public ActionResult Index()
+        {
+            return View();
+        }
+        
+
+        public class jQueryDataTableParamModel
+        {
+            public string sEcho { get; set; }
+            public string sSearch { get; set; }
+            public int iDisplayLength { get; set; }
+            public int iDisplayStart { get; set; }
+            public int iColumns { get; set; }
+            public int iSortingCols { get; set; }
+            public string sColumns { get; set; }
+        }
+
+        public ActionResult MainGrid()
+        {
+            jQueryDataTableParamModel dm = new jQueryDataTableParamModel();
+            var list = main();
+            var result = from a in list
+                         select new[] {
+                             a.username.ToString(),
+                             a.password.ToString(),
+                             a.address.ToString(),
+                             a.amount.ToString(),
+                         };
+
+            return Json(new
+            {
+                sEcho = dm.sEcho,
+                iTotalLength = result,
+                iTotalDisplayRecords = result,
+                aaData = result
+            }, JsonRequestBehavior.AllowGet);
+
+        }
+
+        public List<user> main()
+        {
+
+
+            List<user> abc = new List<user>();
+            using (con = new SqlConnection(Connection))
+            {
+                con.Open();
+                con.CreateCommand();
+                using (cmd = new SqlCommand("sp_bindbanking", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    dr = cmd.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        user c = new user();
+                        c.username = Convert.ToString(dr["username"]);
+                        c.password = Convert.ToString(dr["password"]);
+                        c.address = Convert.ToString(dr["address"]);
+                        c.phoneno = Convert.ToInt32(dr["phoneno"]);
+                        c.city = Convert.ToString(dr["city"]);
+                        c.amount = Convert.ToInt32(dr["amount"]);
+                        abc.Add(c);
+                    }
+                    dr.Close();
+                }
+                return abc;
+            }
+        }
+
+        public string save(string name, string password, string address, Int64 phoneno, string city, Int64 amount)
+        {
+            user s = new user();
+            s.username = name;
+            s.password = password;
+            s.address = address;
+            s.phoneno = phoneno;
+            s.city = city;
+            s.amount = amount;
+            return save(s);
+
+        }
+
+
+        public string save(user s)
+        {
+            using (con = new SqlConnection(Connection))
+            {
+                con.Open();
+                con.CreateCommand();
+
+                using (cmd = new SqlCommand("sp_savebanking", con))
+                {
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@username", s.username));
+                    cmd.Parameters.Add(new SqlParameter("@password", s.password));
+                    cmd.Parameters.Add(new SqlParameter("@address", s.address));
+                    cmd.Parameters.Add(new SqlParameter("@phoneno", s.phoneno));
+                    cmd.Parameters.Add(new SqlParameter("@city", s.city));
+                    cmd.Parameters.Add(new SqlParameter("@amount", s.amount));
+                    cmd.ExecuteNonQuery();
+                }
+                con.Close();
+            }
+            return "";
+        }
+
+
+        [HttpPost]
+
+        public ActionResult login(string username, string password)
+        {
+            List<user> list = new List<user>();
+            if (username == "admin" && password == "admin")
+            {
+                return Json(new { success = 1 });
+            }
+            else
+            {
+                using (con = new SqlConnection(Connection))
+                {
+                    con.Open();
+                    con.CreateCommand();
+                    using (cmd = new SqlCommand("sp_loginbanking", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@username", username));
+                        cmd.Parameters.Add(new SqlParameter("@password", password));
+                        dr = cmd.ExecuteReader();
+                        while (dr.Read())
+                        {
+                            user s = new user();
+                            s.username = Convert.ToString(dr["username"]);
+                            s.password = Convert.ToString(dr["password"]);
+                            list.Add(s);
+                        }
+                    }
+                }
+                Session["username"] = username;
+                foreach (var s in list)
+                {
+                    if
+                           (s.username == "admin" && s.password == "admin")
+                    {
+                        return Json(new { success = 1 });
+                    }
+
+                    else if (s.username == username && s.password == password)
+                    {
+                        return Json(new { success = 2 });
+                    }
+                }
+                return Json(list);
+            }
+        }
+
+
+
+
+
+    }
+}

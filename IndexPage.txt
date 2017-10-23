@@ -1,0 +1,122 @@
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"> </script>
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"> </script>
+
+<script src="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"></script>
+<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+
+<div class="col-sm-12">
+
+    <div class="col-sm-4">
+        <div>
+            <div>
+                <label> Name :</label>
+            </div>
+            <div>
+                <input type="text" id="=txtname" class="form-control" />
+            </div>
+        </div>
+        <div>
+            <div>
+                <label> Date :</label>
+            </div>
+            <div>
+                <input type="text" id="=txtDate" class="form-control" />
+            </div>
+
+        </div>
+
+    </div>
+    <div class="col-sm-4">
+        <div>
+            <label> Age :</label>
+        </div>
+        <div>
+            <input type="text" id="=txtage" class="form-control" />
+        </div>
+
+    </div>
+    <div class="col-sm-4">
+
+        <div>
+            <label> Number :</label>
+        </div>
+        <div>
+            <input type="text" id="=txtnumber" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row">
+    </div>
+
+    <table id="maintable" class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+
+
+    </table>
+
+
+</div>
+
+
+<script type="text/javascript">
+
+    $('#maintable').dataTable({
+        "bDestroy": true,
+        "bPaginate": true,
+        "bLengthChange": false,
+        "bFilter": true,
+        "bSort": false,
+        "bInfo": true,
+        "bServerSide": true,
+        "iDisplayLength": 10,
+        "bProcessing": true,
+        "sAjaxSource": "../Home/MainGrid",
+        "aoColumns": [
+
+                    { "sName": "DrugName" },
+                    { "sName": "GenericName" },
+                    { "sName": "DrugName" },
+                    { "sName": "DrugName" },
+
+        ]
+    });
+
+    $("#logn").click(function () {
+        var user = $("#Text1").val();
+        var pass = $("#Password1").val();
+        $.ajax({
+            url: "../Home/login",
+            type: "POST",
+            data: { username: user, password: pass },
+            success: function (data) {
+                if (data.success == 1) {
+                    window.location.href = "../Home/admin";
+                }
+                else if (data.success == 2) {
+                    alert("Login is succesful");
+                    window.location.href = "../Home/login";
+                }
+                else {
+                    alert("Invalid Username and Password");
+                }
+            }
+        });
+    });
+
+
+</script>
